@@ -6,9 +6,6 @@
 #include "AttributeSet.h"
 #include "PlayerAttributeSet.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class FUSE_API UPlayerAttributeSet : public UAttributeSet
 {
