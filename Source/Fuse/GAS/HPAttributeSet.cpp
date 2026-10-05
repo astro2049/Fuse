@@ -5,6 +5,15 @@
 #include "GameplayEffectExtension.h"
 #include "GameplayEffectTypes.h"
 
+bool UHPAttributeSet::PreGameplayEffectExecute(struct FGameplayEffectModCallbackData& Data)
+{
+	if (Data.EvaluatedData.Attribute == GetmyHPAttribute() && myIsDead) {
+		return false;
+	}
+	
+	return Super::PreGameplayEffectExecute(Data);
+}
+
 void UHPAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
@@ -13,5 +22,9 @@ void UHPAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectModC
 		return;
 	}
 	
-	SetmyHP(FMath::Clamp(myHP.GetCurrentValue(), 0.f, myMaxHP.GetCurrentValue()));
+	if (myHP.GetCurrentValue() <= 0.f) {
+		SetmyHP(0.f);
+		myIsDead = true;
+		OnDead.Broadcast();
+	}
 }
