@@ -14,6 +14,8 @@ class FUSE_API UPlayerAttributeSet : public UAttributeSet
 public:
 	UPROPERTY(BlueprintReadOnly)
 	FGameplayAttributeData myMaxWalkSpeed;
+	UPROPERTY(BlueprintReadOnly)
+	FGameplayAttributeData myFieldAbilityCooldownDurationMultiplier;
 	
 	GAMEPLAYATTRIBUTE_PROPERTY_GETTER(UPlayerAttributeSet, myMaxWalkSpeed)
 };
