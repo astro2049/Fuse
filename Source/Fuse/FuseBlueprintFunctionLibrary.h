@@ -7,14 +7,17 @@
 #include "Abilities/GameplayAbility.h"
 #include "FuseBlueprintFunctionLibrary.generated.h"
 
+class UAbilitySystemComponent;
+
 UCLASS()
 class FUSE_API UFuseBlueprintFunctionLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 	
-	UFUNCTION(BlueprintPure)
+public:
+	UFUNCTION(BlueprintPure, Category = "Fuse|GAS")
 	static FGameplayTagContainer GetAssetTags(const TSubclassOf<UGameplayAbility> anAbilityClass);
 	
-	UFUNCTION(BlueprintPure)
+	UFUNCTION(BlueprintPure, Category = "Fuse|GAS")
 	static bool HasAbility(const UAbilitySystemComponent* const anAsc, const TSubclassOf<UGameplayAbility> anAbilityClass);
 };

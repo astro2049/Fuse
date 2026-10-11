@@ -3,9 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayAbilitySpec.h"
 #include "GameplayEffectTypes.h"
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
+
+class UGameplayEffect;
+class UPerkData;
 
 UCLASS()
 class FUSE_API APlayerCharacter : public ACharacter
@@ -15,6 +19,20 @@ class FUSE_API APlayerCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
+	
+	UFUNCTION(BlueprintImplementableEvent, Category="Fuse")
+    void OnPerksChanged();
+	UFUNCTION(BlueprintCallable, Category="Fuse")
+	void AddPerk(UPerkData* aPerk);
+	UFUNCTION(BlueprintPure, Category="Fuse")
+	int32 GetPerkLevel(const UPerkData* aPerk) const;
+
+	UPROPERTY(BlueprintReadOnly)
+	TArray<TObjectPtr<UPerkData>> myPerks;
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<UPerkData> myFieldAbilityPerk;
+	UPROPERTY(BlueprintReadOnly)
+	FGameplayAbilitySpecHandle myFieldAbilitySpecHandle;
 
 protected:
 	// Called when the game starts or when spawned
@@ -22,4 +40,11 @@ protected:
 	
 private:
 	void OnMaxWalkSpeedChanged(const FOnAttributeChangeData& OnAttributeChangeData) const;
+	
+	bool AddPerkEffect(UPerkData* aPerk);
+	bool AddPerkAbility(UPerkData* aPerk);
+	
+	// Utility
+	/** Finds the first active effect of this class. Perks should have one active effect per class. */
+	const FActiveGameplayEffect* FindActiveEffectFromClass(TSubclassOf<UGameplayEffect> anEffectClass) const;
 };
