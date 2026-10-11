@@ -20,7 +20,7 @@ Project: Fuse 是一个 Unreal Engine 5.7 玩家能力框架 Demo，使用 Gamep
 
 | 名称 | 显示描述（中文 / English） | 补充说明 |
 | --- | --- | --- |
-| 强壮 / Fortitude（参考 Jugger-Nog） | 最大生命值 +100。<br>Maximum health +100. | 最大生命值：100 → 200。 |
+| 强壮 / Fortitude（参考 Jugger-Nog） | 一级：最大生命值 +100。<br>Maximum health +100.<br>二级：最大生命值 +200。<br>Maximum health +200. | 基础最大生命值为 100，一级提升至 200，二级提升至 300。 |
 | 加速行动 / Speed-Up（参考 Stamin-Up） | 移动速度 +50%。<br>Movement speed +50%. | 移动速度：600 → 900 cm/s。 |
 | 快速充能 / Quickcharge | 主动技能冷却时间 −50%。<br>Field ability cooldowns −50%. | 冷却时间：5 → 2.5 秒。 |
 
@@ -30,8 +30,8 @@ Project: Fuse 是一个 Unreal Engine 5.7 玩家能力框架 Demo，使用 Gamep
 
 | 名称 | 显示描述（中文 / English） | 补充说明 |
 | --- | --- | --- |
-| 点燃 / Ignite（参考 Napalm Burst） | 命中时，50% 概率使敌人燃烧 3 秒（每秒 −10 HP）。<br>On hit, 50% chance to burn enemy for 3s (-10HP/s). |  |
-| 冰冻 / Freeze（参考 Cryo Freeze） | 命中时，50% 概率冻结敌人 2 秒。<br>On hit, 50% chance to freeze enemy for 2s. | 冻结期间无法移动和攻击。 |
+| 点燃 / Ignite（参考 Napalm Burst） | 一级：命中时，50% 概率使敌人燃烧 3 秒（每秒 −10 HP）。<br>On hit, 50% chance to burn enemy for 3s (-10HP/s).<br>二级：命中时，使敌人燃烧 5 秒（每秒 −20 HP）。<br>On hit, burn enemy for 5s (-20HP/s). |  |
+| 冰冻 / Freeze（参考 Cryo Freeze） | 命中时，50% 概率冻结敌人 2 秒。<br>On hit, 50% chance to freeze enemy for 2s. | 丧尸冻结期间无法移动和攻击。 |
 
 #### 3. 主动技能（Field Abilities）
 
@@ -39,17 +39,19 @@ Project: Fuse 是一个 Unreal Engine 5.7 玩家能力框架 Demo，使用 Gamep
 
 | 名称 | 显示描述（中文 / English） | 补充说明 |
 | --- | --- | --- |
-| 隐身 / Shroud（参考 Aether Shroud） | 隐身 3 秒。<br>Be undetectable for 3s. | 丧尸停止追击和攻击，玩家仍可移动和射击。 |
+| 隐身 / Shroud（参考 Aether Shroud） | 一级：隐身 1.5 秒。<br>Go undetectable for 1.5s.<br>二级：隐身 3 秒。<br>Go undetectable for 3s. | 玩家仍可移动和射击，丧尸会暂停追击和攻击。 |
 | 治疗 / Heal（参考 Healing Aura） | 立即恢复全部生命值。<br>Instantly restore full health. |  |
 | 放置地雷 / Place Mine（参考 Energy Mine） | 放置感应地雷，造成 50 点范围伤害。<br>Place a proximity mine that deals 50 area damage. | 触发半径 125 cm，伤害半径 300 cm；触发一次后销毁。 |
 
 #### 4. Pickup
 
-玩家通过拾取关卡中的 Pickup 获得强化，每个 Pickup 显示强化的名称、颜色和描述。
+玩家通过拾取关卡中的 Pickup 获得 Perk，每个 Pickup 显示 Perk 的名称、颜色和描述。
+
+首次拾取获得一级 Perk，再次拾取同种 Perk 时，未满级则升级。
 
 ### 2. 基础设施
 
-基础设施以蓝图为主，C++ 实现 AttributeSet、死亡检测与移速属性监听。
+基础设施以蓝图为主，C++ 实现 PerkData、添加/升级 Perk、查询 Perk 等级，以及 AttributeSet、死亡检测与移速属性监听。
 
 #### 1. 玩家与输入
 
@@ -71,7 +73,7 @@ Project: Fuse 是一个 Unreal Engine 5.7 玩家能力框架 Demo，使用 Gamep
 
 #### 4. HUD
 
-屏幕中央显示准心，左下角显示玩家生命值。按分类显示强化的名称、颜色和描述。显示主动技能以及剩余冷却时间。玩家状态区域显示隐身期间的 Status.Shrouded。
+屏幕中央显示准心，左下角显示玩家生命值。玩家 Perks 按分类展示名称、颜色、等级和对应描述，当前主动技能另显示剩余冷却时间。玩家状态区域显示隐身期间的 Status.Shrouded。
 
 界面支持英语和简体中文。
 
@@ -89,7 +91,7 @@ Project: Fuse 是一个 Unreal Engine 5.7 玩家能力框架 Demo，使用 Gamep
 
 | Gameplay Effect | Asset Tag | 实现 |
 | --- | --- | --- |
-| GE_Perk_Drink_Fortitude | Perk.Drink.Fortitude | myMaxHP 增加 100，提高玩家最大生命值。 |
+| GE_Perk_Drink_Fortitude | Perk.Drink.Fortitude | 使用 CurveTable_Perks 按 GE 等级配置 myMaxHP 加成，一级增加 100，二级增加 200。 |
 | GE_Perk_Drink_SpeedUp | Perk.Drink.SpeedUp | myMaxWalkSpeed 乘以 1.5，提高玩家移动速度。 |
 | GE_Perk_Drink_Quickcharge | Perk.Drink.Quickcharge | 通过 Multiply Compound 将 myFieldAbilityCooldownDurationMultiplier 乘以 0.5，使主动技能冷却时间缩短 50%。 |
 
@@ -101,10 +103,10 @@ BP_RifleComponent 命中丧尸并造成伤害后，通过 Send Gameplay Event to
 
 | Gameplay Ability | Asset Tag | 实现 |
 | --- | --- | --- |
-| GA_Perk_AmmoMode_Ignite | Perk.AmmoMod.Ignite | 向目标施加 GE_Status_Burning，持续 3 秒，每秒减少 10 点 myHP，并赋予 Status.Burning Tag。 |
-| GA_Perk_AmmoMode_Freeze | Perk.AmmoMod.Freeze | 向目标施加持续 2 秒的 GE_Status_Frozen，赋予 Status.Frozen Tag，使目标停止移动和攻击。 |
+| GA_Perk_AmmoMod_Ignite | Perk.AmmoMod.Ignite | 每次命中时将当前 Ability Level 传给 GE_Status_Burning，概率、持续时间和周期伤害使用 CurveTable_Perks 按等级配置。一级以 50% 概率使目标燃烧 3 秒，每秒减少 10 点 myHP；二级使目标燃烧 5 秒，每秒减少 20 点 myHP。燃烧期间赋予 Status.Burning Tag。 |
+| GA_Perk_AmmoMod_Freeze | Perk.AmmoMod.Freeze | 以 50% 概率向目标施加持续 2 秒的 GE_Status_Frozen，赋予 Status.Frozen Tag，使目标停止移动和攻击。 |
 
-两个状态 GE 均通过 Chance to Apply 组件将施加概率配置为 0.5，每次命中时分别判断是否成功施加。
+状态 GE 通过 Chance to Apply 组件配置施加概率，每次命中时分别判断。
 
 #### 3. 主动技能（Field Abilities）
 
@@ -112,7 +114,7 @@ BP_RifleComponent 命中丧尸并造成伤害后，通过 Send Gameplay Event to
 
 | Gameplay Ability | Asset Tag | 实现 |
 | --- | --- | --- |
-| GA_Perk_FieldAbility_Shroud | Perk.FieldAbility.Shroud | 向玩家应用持续 3 秒的 GE_Shrouded，通过 Granted Tags 赋予 Status.Shrouded，供状态 UI 查询。 |
+| GA_Perk_FieldAbility_Shroud | Perk.FieldAbility.Shroud | 将当前 Ability Level 传给 GE_Shrouded，持续时间使用 CurveTable_Perks 按等级配置，一级为 1.5 秒，二级为 3 秒。通过 Granted Tags 赋予 Status.Shrouded，供状态 UI 查询。 |
 | GA_Perk_FieldAbility_Heal | Perk.FieldAbility.Heal | 向玩家应用 GE_FullHeal，以目标 myMaxHP 的属性值 Override myHP，立即恢复全部生命值。 |
 | GA_Perk_FieldAbility_PlaceMine | Perk.FieldAbility.Mine | 根据玩家位置与朝向生成 BP_Mine。 |
 
@@ -122,7 +124,7 @@ BP_Mine 的触发半径为 125 cm，Damage Sphere 半径为 300 cm。丧尸进�
 
 #### 4. 属性集（AttributeSet）
 
-强化通过 GAS 的 Gameplay Effect（GE）修改属性，通过 Gameplay Ability（GA）执行技能逻辑。项目使用两个 C++ AttributeSet 定义相关属性：
+Perk 通过 GAS 的 Gameplay Effect（GE）修改属性，通过 Gameplay Ability（GA）执行技能逻辑。项目使用两个 C++ AttributeSet 定义相关属性：
 
 | AttributeSet | 属性 | 用途 |
 | --- | --- | --- |
@@ -137,30 +139,34 @@ UHPAttributeSet 在 PostGameplayEffectExecute 中检测 myHP 归零，通过 Set
 
 #### 5. Pickup
 
-BP_Pickup 负责触发强化拾取，在玩家进入重叠范围时，将 PerkData 传给 BP_PlayerCharacter.PickUp 处理。
+BP_Pickup 负责触发 Perk 拾取，在玩家进入重叠范围时，将 PerkData 传给 C++ APlayerCharacter.AddPerk 处理。
 
-BP_PerkData 保存强化的展示数据与能力引用，基于 PrimaryDataAsset 实现。名称、Description 和 NameColor 用于 UI 展示；GE / GA 引用用于授予强化：饮料使用 GE，子弹模组和主动技能使用 GA。
+UPerkData 继承 UDataAsset，保存名称、颜色、各等级描述，以及 GE 和 GA 的 Class 引用。饮料使用 GE，子弹模组和主动技能使用 GA。
 
-##### 强化（Perks）拾取：BP_PlayerCharacter.PickUp
+myDescriptions 按等级保存描述，GetMaxLevel 返回数组长度减 1。项目内部等级从 0 开始，对应界面中的一级；当前等级保存在 ASC 中。
 
-BP_PlayerCharacter.PickUp 负责根据传入的 PerkData 授予强化，并检查是否已拥有对应 GE / GA，避免重复授予。
+##### 强化（Perks）授予与升级：APlayerCharacter.AddPerk
 
-- GE 分支：检查 Class 有效且 Gameplay Effect Count 为 0 后，向玩家应用效果。
-- GA 分支：检查 Class 有效且 ASC 尚未拥有该 Ability，再按 Asset Tags 分类。子弹模组授予后立即调用 Try Activate Ability 开始监听；主动技能替换当前技能并保存 Handle，等待玩家按 X 激活。
+APlayerCharacter.AddPerk 根据 PerkData 授予或升级 Perk，并维护 myPerks，由 AddPerkEffect 和 AddPerkAbility 分别处理 GE 和 GA。
 
-主动技能的替换使用 FieldAbilityPerk 和 FieldAbilitySpecHandle 记录当前技能：从 Perks 移除旧数据，通过 Clear Ability 移除旧 GA，再授予新 GA 并更新引用和 Handle。
+- GE 分支：按 Class 查询已有 GE；未持有时应用 GE，已持有且未满级时提升等级。
+- GA 分支：按 Class 查询 AbilitySpec；未持有时授予对应 GA，子弹模组授予后直接启动，主动技能替换当前技能并保存 Handle；已持有且未满级时提升 AbilitySpec.Level。
 
-PickUp 内的 Add Perk 分组负责记录强化并更新展示，将 DataAsset 加入 Perks，调用 HUD 刷新强化列表，并播放拾取音效。
+Perks 更新或升级后，通过 BlueprintImplementableEvent OnPerksChanged 通知 BP_PlayerCharacter 刷新 HUD 并播放拾取音效。
+
+##### 强化（Perks）等级查询
+
+APlayerCharacter.GetPerkLevel 按 Class 从 ASC 查询 GE / GA 的当前等级，供 UI 统一获取 Perk 等级；未持有时返回 −1。
 
 ##### 强化（Perks）分类查询
 
-BP_PlayerCharacter.GetPerksByTag 为 HUD 提供按分类查询强化的接口。它遍历 Perks，按 GE / GA 的 Asset Tags 匹配传入 Tag，返回对应的 PerkData。使用非精确匹配，Perk.Drink 等父 Tag 可查询整个分类。
+BP_PlayerCharacter.GetPerksByTag 为 HUD 提供按分类查询 myPerks 的接口。它遍历 myPerks，按 GE / GA 的 Asset Tags 匹配传入 Tag，返回对应的 PerkData。使用非精确匹配，Perk.Drink 等父 Tag 可查询整个分类。
 
 ### 2. 基础设施
 
 #### 1. 玩家与输入
 
-BP_PlayerCharacter 继承 C++ APlayerCharacter，使用 Enhanced Input 处理 Move、Look、Fire 和 FieldAbility；移动与视角逻辑在角色蓝图中，开火状态交给 BP_RifleComponent。按 `X` 时使用保存的 FieldAbilitySpecHandle 调用 ASC.TryActivateAbility。
+BP_PlayerCharacter 继承 C++ APlayerCharacter，使用 Enhanced Input 处理 Move、Look、Fire 和 FieldAbility；移动与视角逻辑在角色蓝图中，开火状态交给 BP_RifleComponent。按 `X` 时使用保存的 myFieldAbilitySpecHandle 调用 ASC.TryActivateAbility。
 
 #### 2. 步枪
 
@@ -174,8 +180,8 @@ BP_RifleComponent 包含连续开火的状态与时间间隔判断、射线命�
 | --- | --- | --- | --- |
 | BPFL_Fuse | 蓝图 | GetHPData | 从目标 HPAttributeSet 读取当前生命值与最大生命值，供玩家和丧尸的生命值 UI 使用。 |
 | BPFL_Fuse | 蓝图 | DealDamage | 通过 SetByCaller（Data.Damage）应用 GE_HPDamage，供步枪、地雷和丧尸近战复用。 |
-| UFuseBlueprintFunctionLibrary | C++ | HasAbility | 通过 ASC.FindAbilitySpecFromClass 检查是否已拥有指定技能，供拾取时避免重复授予。 |
-| UFuseBlueprintFunctionLibrary | C++ | GetAssetTags | 读取 GA Class 默认对象的 Asset Tags，供强化分类查询使用。 |
+| UFuseBlueprintFunctionLibrary | C++ | HasAbility | 通过 ASC.FindAbilitySpecFromClass 检查是否已拥有指定技能。 |
+| UFuseBlueprintFunctionLibrary | C++ | GetAssetTags | 读取 GA Class 默认对象的 Asset Tags，供 Perk 分类查询使用。 |
 
 #### 4. 丧尸与行为树
 
@@ -207,22 +213,22 @@ BP_ZombieCharacter 绑定 HPAttributeSet.OnDead：停止行为树，使用 Timel
 
 #### 5. HUD
 
-UI_HUD 显示准心、玩家生命值、强化和主动技能冷却。生命值展示复用 UI_HealthBar，通过 BPFL_Fuse.GetHPData 更新；丧尸头顶的 WidgetComponent 也使用该组件。
+UI_HUD 显示准心、玩家生命值、玩家 Perks 和主动技能冷却。玩家与丧尸的生命值展示共用 UI_HealthBar，通过 BPFL_Fuse.GetHPData 获取数据。
 
 ##### 强化（Perks）列表显示与更新
 
-HUD 按 Drinks、Ammo Mods 和 Field Abilities 分类展示强化，每个 UI_PerkSection 配置标题与分类 Tag。拾取强化后，PickUp 内的 Add Perk 分组调用 UI_HUD.RefreshPerks 刷新列表。
+HUD 按 Drinks、Ammo Mods 和 Field Abilities 分类展示玩家 Perks。
 
-UI_PerkSection.RefreshPerks 清空对应分类的列表，调用玩家 GetPerksByTag，遍历结果创建 UI_PerkName 组件并加入 VerticalBox。UI_PerkName 从 PerkData 读取名称、NameColor 和 Description，供 HUD 和场景 Pickup 共用。
+Perks 更新或升级后，OnPerksChanged 通知 UI_HUD.RefreshPerks，刷新分类列表和当前主动技能信息。UI_PerkSection.RefreshPerks 按分类 Tag 查询 Perk 及等级，重建列表。
 
-##### 主动技能（Field Abilities）显示
+UI_PerkName 根据 PerkData 和等级显示名称、颜色、等级及对应描述，HUD 和场景 Pickup 共用该组件。
 
-UI_HUD 从当前主动技能的 PerkData 更新展示内容，没有主动技能时隐藏该区域；通过 Get Active Effects with All Tags 查询 Cooldown.FieldAbility，读取冷却 GE 的剩余时间并更新倒计时。
+##### 主动技能（Field Abilities）冷却显示
+
+HUD 每帧按 Cooldown.FieldAbility 查询冷却 GE 的剩余时间，更新主动技能倒计时。
 
 ##### 状态（Status Effects）显示
 
-UI_StatusSection 由玩家 HUD 和丧尸右侧的 WidgetComponent 共用，通过自定义 Owner 变量指定显示对象。
-
-UI_StatusSection 每帧检查 Owner 有效后，从其 ASC 查询 Owned Gameplay Tags，按 Status 父 Tag 过滤，仅在状态容器变化时重建列表。
+UI_StatusSection 显示 Owner 的状态标签，玩家 HUD 和丧尸的 WidgetComponent 共用该组件。每帧从 Owner 的 ASC 查询 Status 标签，仅在标签变化时刷新列表。
 
 UI_StatusText 直接显示状态标签名：Status.Burning、Status.Frozen 和 Status.Shrouded。
